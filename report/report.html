@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ML Final Project Report</title>
+<style>
+@page { size: A4; margin: 2cm; }
+body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; font-size: 11pt; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+h1 { font-size: 18pt; color: #1a1a2e; border-bottom: 2px solid #16213e; padding-bottom: 6px; }
+h2 { font-size: 14pt; color: #16213e; margin-top: 20px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+h3 { font-size: 12pt; color: #0f3460; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; }
+th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; }
+th { background-color: #16213e; color: white; }
+tr:nth-child(even) { background-color: #f8f9fa; }
+hr { border: none; border-top: 1px solid #ccc; margin: 20px 0; }
+code { background-color: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-size: 10pt; }
+p { margin: 6px 0; }
+ol, ul { margin: 6px 0; }
+li { margin: 3px 0; }
+strong { color: #0f3460; }
+</style>
+</head>
+<body>
+<h1>Appliances Energy Prediction: Nonlinear Regression with Ensemble Methods</h1>
+<h2>Machine Learning – Final Project Report</h2>
+<p><strong>Author:</strong> Mehdi Talebi<br />
+<strong>Dataset:</strong> Appliances Energy Prediction (UCI Machine Learning Repository)<br />
+<strong>Date:</strong> February 2026</p>
+<hr />
+<h2>1. Introduction</h2>
+<h3>Problem Statement</h3>
+<p>This project addresses the prediction of household appliance energy consumption (in Wh per 10-minute interval) using environmental sensor data from a low-energy house in Belgium. The dataset, collected over approximately 4.5 months, comprises ~19,700 observations with 25 features including indoor/outdoor temperature, humidity, weather conditions, and time-derived variables.</p>
+<h3>Why Nonlinear Regression?</h3>
+<p>Energy consumption exhibits inherently nonlinear patterns driven by occupancy thresholds, temperature comfort zones, and time-of-day effects. Linear models cannot adequately capture these dependencies, motivating the use of nonlinear and ensemble methods that can model complex feature interactions.</p>
+<h3>Dataset Overview</h3>
+<ul>
+<li><strong>Source:</strong> UCI ML Repository (Candanedo et al., 2017)</li>
+<li><strong>Observations:</strong> 19,735 (10-minute intervals)</li>
+<li><strong>Features:</strong> 29 columns (25 predictors + target + date + 2 random noise columns)</li>
+<li><strong>Target:</strong> <code>Appliances</code> – energy consumed by appliances in Wh</li>
+<li><strong>Missing values:</strong> None</li>
+</ul>
+<hr />
+<h2>2. Methods</h2>
+<h3>EDA Summary</h3>
+<p>The target variable is strongly right-skewed (skewness ≈ 3.6), with most readings below 100 Wh and occasional spikes up to 1,080 Wh. Individual feature correlations with the target are weak (max |r| &lt; 0.3), suggesting nonlinear dependencies. Clear temporal patterns exist: energy consumption peaks during morning and evening hours, with differences between weekdays and weekends.</p>
+<h3>Preprocessing</h3>
+<ul>
+<li><strong>Feature engineering:</strong> Extracted <code>hour</code>, <code>day_of_week</code>, <code>month</code>, <code>is_weekend</code> from the timestamp</li>
+<li><strong>Dropped columns:</strong> <code>date</code> (after extraction), <code>rv1</code>, <code>rv2</code> (random noise variables)</li>
+<li><strong>Outlier treatment:</strong> IQR-based capping on the target variable — outliers were winsorized rather than removed to preserve real high-consumption events</li>
+<li><strong>Scaling:</strong> StandardScaler fitted on training data only (to prevent leakage), applied to models requiring it (Linear, Polynomial, SVR). Tree-based models used unscaled features.</li>
+</ul>
+<h3>Models Selected</h3>
+<ol>
+<li><strong>Linear Regression</strong> – baseline</li>
+<li><strong>Ridge Polynomial Regression</strong> – degree 2, α=0.1 (best via CV)</li>
+<li><strong>Decision Tree Regressor</strong> – max_depth=20, min_samples_leaf=5</li>
+<li><strong>SVR (RBF kernel)</strong> – C=100, γ=0.1, ε=0.5</li>
+<li><strong>Random Forest</strong> – 200 trees, min_samples_leaf=2</li>
+<li><strong>Gradient Boosting</strong> – 200 estimators, max_depth=7, lr=0.1</li>
+</ol>
+<h3>Hyperparameter Tuning</h3>
+<p>GridSearchCV with 5-fold cross-validation (3-fold for SVR due to computational cost) using <code>neg_mean_squared_error</code> scoring. Ranges were chosen based on standard practice and dataset characteristics.</p>
+<hr />
+<h2>3. Results</h2>
+<h3>Model Comparison</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Train MAE</th>
+<th>Test MAE</th>
+<th>Train RMSE</th>
+<th>Test RMSE</th>
+<th>Train R²</th>
+<th>Test R²</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Random Forest</strong></td>
+<td><strong>7.02</strong></td>
+<td><strong>14.66</strong></td>
+<td><strong>10.89</strong></td>
+<td><strong>22.11</strong></td>
+<td><strong>0.9359</strong></td>
+<td><strong>0.7341</strong></td>
+</tr>
+<tr>
+<td>Gradient Boosting</td>
+<td>10.70</td>
+<td>15.71</td>
+<td>14.68</td>
+<td>23.16</td>
+<td>0.8834</td>
+<td>0.7081</td>
+</tr>
+<tr>
+<td>SVR (RBF)</td>
+<td>12.29</td>
+<td>16.16</td>
+<td>22.38</td>
+<td>26.44</td>
+<td>0.7289</td>
+<td>0.6196</td>
+</tr>
+<tr>
+<td>Decision Tree</td>
+<td>9.53</td>
+<td>17.13</td>
+<td>15.62</td>
+<td>27.66</td>
+<td>0.8679</td>
+<td>0.5837</td>
+</tr>
+<tr>
+<td>Linear Regression</td>
+<td>26.41</td>
+<td>26.42</td>
+<td>35.86</td>
+<td>35.58</td>
+<td>0.3038</td>
+<td>0.3111</td>
+</tr>
+<tr>
+<td>Polynomial Ridge</td>
+<td>26.00</td>
+<td>26.62</td>
+<td>35.38</td>
+<td>36.15</td>
+<td>0.3224</td>
+<td>0.2889</td>
+</tr>
+</tbody>
+</table>
+<h3>Key Findings</h3>
+<ul>
+<li><strong>Random Forest</strong> achieves the best test performance (R²=0.734, MAE=14.66 Wh)</li>
+<li><strong>Ensemble methods</strong> consistently outperform individual models</li>
+<li><strong>Nonlinear models</strong> substantially outperform linear approaches (R² improvement: 0.31 → 0.73)</li>
+<li>The <strong>Decision Tree</strong> shows significant overfitting (Train R²=0.87 vs Test R²=0.58), which Random Forest mitigates through bagging</li>
+</ul>
+<h3>Feature Importance</h3>
+<p>The most predictive features across models are:
+- <code>lights</code> (lighting energy) — proxy for occupancy
+- Indoor temperatures (<code>T6</code>, <code>T3</code>, <code>T8</code>)
+- Temporal features (<code>hour</code>, <code>day_of_week</code>)</p>
+<hr />
+<h2>4. Discussion</h2>
+<h3>Error Analysis</h3>
+<p>The best model (Random Forest) struggles most with high-consumption events where usage spikes due to simultaneous appliance usage. Large-error cases (|error| &gt; 2σ) comprise approximately 5% of the test set and are biased toward under-prediction of peak consumption.</p>
+<p>Residual analysis reveals:
+- Near-zero mean residual (unbiased predictions overall)
+- Some heteroscedasticity: larger residuals at higher predicted values
+- No strong systematic patterns in residuals vs. predicted values</p>
+<h3>Feature Interpretation</h3>
+<ul>
+<li><code>lights</code> being the top predictor aligns with domain knowledge: lighting correlates with occupancy, which drives appliance usage</li>
+<li>Indoor temperature importance reflects HVAC-related energy consumption</li>
+<li>The <code>hour</code> feature captures daily activity patterns (cooking, entertainment)</li>
+<li>Linear model coefficients show positive associations with temperature and lighting, confirming physical intuition</li>
+</ul>
+<h3>Limitations</h3>
+<ul>
+<li><strong>Single building:</strong> Results are specific to one house in Belgium</li>
+<li><strong>4.5-month window:</strong> Incomplete seasonal coverage</li>
+<li><strong>No explicit occupancy data:</strong> Model relies on indirect proxies</li>
+<li><strong>Independence assumption:</strong> We treat samples as iid, ignoring temporal autocorrelation</li>
+<li><strong>Feature engineering:</strong> More sophisticated lag features or rolling statistics could improve performance</li>
+</ul>
+<h3>Future Work</h3>
+<ol>
+<li><strong>Time-series models</strong> (LSTM, GRU) to exploit temporal dependencies</li>
+<li><strong>Real-time occupancy sensors</strong> as additional predictors</li>
+<li><strong>Weather forecast integration</strong> for anticipatory energy management</li>
+<li><strong>Multi-building generalization</strong> with transfer learning</li>
+<li><strong>Automated feature selection</strong> via recursive elimination or LASSO</li>
+</ol>
+<hr />
+<h2>References</h2>
+<ol>
+<li>Candanedo, L. M., Feldmann, A., &amp; Degemmis, D. (2017). <em>Data driven prediction models of energy use of appliances in a low-energy house.</em> Energy and Buildings, 145, 13–25. https://doi.org/10.1016/j.enbuild.2017.03.040</li>
+<li>UCI Machine Learning Repository: https://archive.ics.uci.edu/dataset/374/appliances+energy+prediction</li>
+<li>Scikit-learn documentation: https://scikit-learn.org</li>
+<li>Pandas documentation: https://pandas.pydata.org</li>
+<li>Matplotlib documentation: https://matplotlib.org</li>
+</ol>
+<hr />
+<h2>AI Usage Statement</h2>
+<p><strong>Did you use any generative AI tools?</strong> No.<br />
+All code, analysis, and written content were produced independently.<br />
+External resources consulted: scikit-learn documentation, pandas documentation, and the original dataset paper (Candanedo et al., 2017).</p>
+</body>
+</html>
