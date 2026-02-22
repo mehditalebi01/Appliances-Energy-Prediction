@@ -20,18 +20,26 @@
             padding: 20px;
         }
 
+
         h1 {
             font-size: 18pt;
             color: #1a1a2e;
-            border-bottom: 2px solid #16213e;
-            padding-bottom: 6px;
+            margin-bottom: 12px;
         }
 
-        h2 {
+        h1::after {
+            content: '';
+            display: block;
+            width: 50%;
+            border-bottom: 2px solid #16213e;
+            padding-top: 6px;
+        }
+
+        ``` h2 {
             font-size: 14pt;
             color: #16213e;
             margin-top: 20px;
-            border-bottom: 1px solid #ddd;
+
             padding-bottom: 4px;
         }
 
@@ -119,7 +127,13 @@
         <li><strong>Target:</strong> <code>Appliances</code> – energy consumed by appliances in Wh</li>
         <li><strong>Missing values:</strong> None</li>
     </ul>
-    <hr />
+
+
+    <br />
+    <br />
+    <br />
+    <br />
+
     <h2>2. Methods</h2>
     <h3>EDA Summary</h3>
     <p>The target variable is strongly right-skewed (skewness ≈ 3.6), with most readings below 100 Wh and occasional
@@ -129,7 +143,8 @@
     <h3>Preprocessing</h3>
     <ul>
         <li><strong>Feature engineering:</strong> Extracted <code>hour</code>, <code>day_of_week</code>,
-            <code>month</code>, <code>is_weekend</code> from the timestamp</li>
+            <code>month</code>, <code>is_weekend</code> from the timestamp
+        </li>
         <li><strong>Dropped columns:</strong> <code>date</code> (after extraction), <code>rv1</code>, <code>rv2</code>
             (random noise variables)</li>
         <li><strong>Outlier treatment:</strong> IQR-based capping on the target variable — outliers were winsorized
@@ -149,8 +164,17 @@
     <h3>Hyperparameter Tuning</h3>
     <p>GridSearchCV with 5-fold cross-validation (3-fold for SVR due to computational cost) using
         <code>neg_mean_squared_error</code> scoring. Ranges were chosen based on standard practice and dataset
-        characteristics.</p>
-    <hr />
+        characteristics.
+    </p>
+
+
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+
+
     <h2>3. Results</h2>
     <h3>Model Comparison</h3>
     <table>
@@ -236,7 +260,20 @@
         - <code>lights</code> (lighting energy) — proxy for occupancy
         - Indoor temperatures (<code>T6</code>, <code>T3</code>, <code>T8</code>)
         - Temporal features (<code>hour</code>, <code>day_of_week</code>)</p>
-    <hr />
+
+
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+
+
     <h2>4. Discussion</h2>
     <h3>Error Analysis</h3>
     <p>The best model (Random Forest) struggles most with high-consumption events where usage spikes due to simultaneous
@@ -272,7 +309,12 @@
         <li><strong>Multi-building generalization</strong> with transfer learning</li>
         <li><strong>Automated feature selection</strong> via recursive elimination or LASSO</li>
     </ol>
-    <hr />
+
+
+
+    <br />
+
+
     <h2>References</h2>
     <ol>
         <li>Candanedo, L. M., Feldmann, A., &amp; Degemmis, D. (2017). <em>Data driven prediction models of energy use
@@ -283,7 +325,7 @@
         <li>Pandas documentation: https://pandas.pydata.org</li>
         <li>Matplotlib documentation: https://matplotlib.org</li>
     </ol>
-    <hr />
+    <hr style="width: 50%;" />
     <h2>AI Usage Statement</h2>
     <p><strong>Did you use any generative AI tools?</strong> No.<br />
         All code, analysis, and written content were produced independently.<br />
