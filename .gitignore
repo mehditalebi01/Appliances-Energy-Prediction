@@ -26,7 +26,4 @@ env/
 Thumbs.db
 
 # Data files (large)
-# energydata_complete.csv  # included since <12MB and needed for reproducibility
-
-# Gemini agent metadata
-.gemini/
+# energydata_complete.csv  # included since needed for reproducibility
